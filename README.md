@@ -2,7 +2,7 @@
 
 A Flask app for publishing a chronological public lab notebook with:
 
-- one primary handwritten notebook-page image per day
+- optional primary handwritten notebook-page image per day
 - optional gallery photos with captions
 - markdown notes for each entry
 - password-protected mobile-friendly admin upload flow
@@ -14,6 +14,7 @@ A Flask app for publishing a chronological public lab notebook with:
 - Per-entry detail page.
 - Admin login with session-based auth (`LABNOTES_ADMIN_PASSWORD`).
 - Upload workflow designed for phone camera use (`accept="image/*"` + `capture`).
+- Notebook page image is optional for days without handwritten notes.
 - On-disk image storage organized by date: `data/uploads/YYYY/MM/DD/...`.
 - SQLite schema auto-initialized on startup (`data/labnotes.db` by default).
 
@@ -87,7 +88,7 @@ Recommended:
 
 1. Log in at `/login`.
 2. Go to `/admin/new`.
-3. Choose date, add notebook page, optional gallery photos + captions, markdown notes.
+3. Choose date, optionally add notebook page, add gallery photos + captions, markdown notes.
 4. Publish.
 
 To edit or delete existing entries, use `/admin`.

@@ -23,37 +23,38 @@
     const photoInput = document.querySelector("[data-photo-input]");
     if (photoInput) {
         const previewTargetId = photoInput.dataset.previewTarget;
-        const captionTargetId = photoInput.dataset.captionTarget;
         const captionName = photoInput.dataset.captionName || "photo_caption";
 
         const previewRoot = previewTargetId ? document.getElementById(previewTargetId) : null;
-        const captionRoot = captionTargetId ? document.getElementById(captionTargetId) : null;
 
         photoInput.addEventListener("change", () => {
-            if (!previewRoot || !captionRoot) return;
+            if (!previewRoot) return;
 
             previewRoot.innerHTML = "";
-            captionRoot.innerHTML = "";
 
             const files = Array.from(photoInput.files || []);
             files.forEach((file, index) => {
                 const objectUrl = URL.createObjectURL(file);
 
-                const figure = document.createElement("figure");
-                figure.innerHTML = `
-                    <img src="${objectUrl}" alt="New photo ${index + 1}">
-                    <figcaption>${file.name}</figcaption>
-                `;
-                previewRoot.appendChild(figure);
+                const card = document.createElement("article");
+                card.className = "new-photo-card";
 
                 const label = document.createElement("label");
-                label.textContent = `Caption for photo ${index + 1}`;
+                label.className = "new-photo-caption-label";
+                label.textContent = `Photo ${index + 1} caption`;
                 const input = document.createElement("input");
                 input.type = "text";
                 input.name = captionName;
                 input.placeholder = "Optional caption";
                 label.appendChild(input);
-                captionRoot.appendChild(label);
+
+                card.innerHTML = `
+                    <p class="new-photo-index">Photo ${index + 1}</p>
+                    <img src="${objectUrl}" alt="New photo ${index + 1}">
+                    <p class="new-photo-name">${file.name}</p>
+                `;
+                card.appendChild(label);
+                previewRoot.appendChild(card);
             });
         });
     }

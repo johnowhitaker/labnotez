@@ -424,7 +424,7 @@ textarea {
 .preview-grid,
 .existing-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: 0.65rem;
     margin-top: 0.65rem;
 }
@@ -449,10 +449,44 @@ textarea {
     object-fit: cover;
 }
 
-.caption-stack {
-    margin-top: 0.7rem;
+.new-photo-card {
+    margin: 0;
+    border: 1px solid #d8ccb7;
+    border-radius: 10px;
+    padding: 0.55rem;
+    background: #fffdf8;
     display: grid;
-    gap: 0.55rem;
+    gap: 0.45rem;
+}
+
+.new-photo-card img {
+    width: 100%;
+    display: block;
+    border-radius: 8px;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+}
+
+.new-photo-index {
+    margin: 0;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+}
+
+.new-photo-name {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.new-photo-caption-label {
+    gap: 0.35rem;
 }
 
 .checkbox-inline {
