@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% set is_edit = mode == "edit" %}
+{% set notebook = entry.notebook if entry.notebook else None %}
+{% set upload_input_name = "new_photos" if is_edit else "photos" %}
+{% set upload_caption_name = "new_photo_caption" if is_edit else "photo_caption" %}
+{% block title %}
+    {{ "Edit Entry" if is_edit else "New Entry" }} · Lab Notes
+{% endblock %}
+{% block content %}
+    <section class="admin-head">
+        <div>
+            <p class="hero-kicker">Admin</p>
+            <h1>{{ "Edit Entry" if is_edit else "New Lab Entry" }}</h1>
+        </div>
+        <a class="btn" href="{{ url_for('main.admin_dashboard') }}">Back to Manage</a>
+    </section>
+
+    <form class="admin-form" method="post" enctype="multipart/form-data">
+        <section class="form-grid">
+            <label>
+                Entry Date
+                <input type="date" name="entry_date" value="{{ entry.entry_date }}" required>
+            </label>
+
+            <label>
+                Title (optional)
+                <input
+                    type="text"
+                    name="title"
+                    value="{{ entry.title }}"
+                    placeholder="Example: Yeast growth trial"
+                >
+            </label>
+        </section>
+
+        <label>
+            Daily Notes (Markdown)
+            <textarea
+                name="body_markdown"
+                rows="10"
+                placeholder="What happened today?"
+                data-autosize
+            >{{ entry.body_markdown }}</textarea>
+        </label>
+
+        <section class="upload-panel">
+            <h2>Notebook Page</h2>
+            <p>Optional: add the main handwritten page for this date.</p>
+
+            <label>
+                Upload notebook image
+                <input
+                    type="file"
+                    name="notebook_page"
+                    accept="image/*"
+                    capture="environment"
+                    data-notebook-input
+                    data-preview-target="notebook-preview"
+                >
+            </label>
+
+            <label>
+                Notebook caption
+                <input
+                    type="text"
+                    name="notebook_caption"
+                    value="{{ notebook.caption if notebook else '' }}"
+                    placeholder="Quick summary of handwritten notes"
+                >
+            </label>
+
+            <div class="single-preview" id="notebook-preview">
+                {% if notebook and notebook.url %}
+                    <figure>
+                        <img src="{{ notebook.url }}" alt="Current notebook page">
+                        <figcaption>Current notebook page</figcaption>
+                    </figure>
+                {% endif %}
+            </div>
+        </section>
+
+        {% if is_edit and entry.photos %}
+            <section class="upload-panel">
+                <h2>Current Gallery Photos</h2>
+                <div class="existing-grid">
+                    {% for photo in entry.photos %}
+                        <article class="existing-photo">
+                            <input type="hidden" name="existing_photo_id" value="{{ photo.id }}">
+                            <img src="{{ photo.url }}" alt="Gallery photo {{ loop.index }}">
+                            <label>
+                                Caption
+                                <input
+                                    type="text"
+                                    name="existing_photo_caption"
+                                    value="{{ photo.caption }}"
+                                    placeholder="Caption"
+                                >
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" name="existing_photo_delete" value="{{ photo.id }}">
+                                Remove this image
+                            </label>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        <section class="upload-panel">
+            <h2>Add Gallery Photos</h2>
+            <p>Take multiple photos from mobile, then add short captions.</p>
+            <label>
+                Upload photos
+                <input
+                    type="file"
+                    name="{{ upload_input_name }}"
+                    accept="image/*"
+                    multiple
+                    capture="environment"
+                    data-photo-input
+                    data-preview-target="new-photo-previews"
+                    data-caption-name="{{ upload_caption_name }}"
+                >
+            </label>
+
+            <div class="preview-grid" id="new-photo-previews"></div>
+        </section>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {{ "Save Changes" if is_edit else "Publish Entry" }}
+            </button>
+            <a class="btn" href="{{ url_for('main.admin_dashboard') }}">Cancel</a>
+        </div>
+    </form>
+
+    {% if is_edit %}
+        <section class="danger-zone">
+            <h2>Delete Entry</h2>
+            <p>This removes the record and all associated image files.</p>
+            <form
+                method="post"
+                action="{{ url_for('main.admin_delete', entry_id=entry.id) }}"
+                onsubmit="return confirm('Delete this entry and its images permanently?');"
+            >
+                <button type="submit" class="btn btn-danger">Delete Entry</button>
+            </form>
+        </section>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Admin Login · Lab Notes{% endblock %}
+{% block content %}
+    <section class="auth-wrap">
+        <article class="auth-card">
+            <h1>Admin Login</h1>
+            <p>Use your private password to access upload and editing tools.</p>
+
+            <form method="post" class="stack-form">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    autocomplete="current-password"
+                    required
+                >
+                <button type="submit" class="btn btn-primary">Sign In</button>
+            </form>
+        </article>
+    </section>
+{% endblock %}

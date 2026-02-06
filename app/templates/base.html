@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Lab Notes{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="page-background" aria-hidden="true"></div>
+    <header class="site-header">
+        <a class="brand" href="{{ url_for('main.index') }}">
+            <span class="brand-mark">Ln</span>
+            <span>Lab Notes</span>
+        </a>
+        <nav class="site-nav">
+            <a href="{{ url_for('main.index') }}">Notebook</a>
+            {% if session.get('admin_auth') %}
+                <a href="{{ url_for('main.admin_new') }}">New Entry</a>
+                <a href="{{ url_for('main.admin_dashboard') }}">Manage</a>
+                <form method="post" action="{{ url_for('main.logout') }}" class="inline-form">
+                    <button type="submit" class="nav-button">Log Out</button>
+                </form>
+            {% else %}
+                <a href="{{ url_for('main.login') }}">Admin Login</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main class="page-shell">
+        {% with flashes = get_flashed_messages(with_categories=true) %}
+            {% if flashes %}
+                <ul class="flash-list">
+                    {% for category, message in flashes %}
+                        <li class="flash flash-{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        Public notebook for small biology experiments.
+    </footer>
+
+    <script defer src="{{ url_for('static', filename='admin.js') }}"></script>
+</body>
+</html>

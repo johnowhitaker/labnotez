@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard · Lab Notes{% endblock %}
+{% block content %}
+    <section class="admin-head">
+        <div>
+            <p class="hero-kicker">Admin</p>
+            <h1>Manage Entries</h1>
+        </div>
+        <a class="btn btn-primary" href="{{ url_for('main.admin_new') }}">Create New Entry</a>
+    </section>
+
+    {% if entries %}
+        <section class="admin-list">
+            {% for entry in entries %}
+                <article class="admin-item">
+                    <div>
+                        <p class="entry-date">{{ entry.entry_date|human_date }}</p>
+                        <h2>{{ entry.title if entry.title else "Daily Entry" }}</h2>
+                        <p class="admin-meta">
+                            Notebook page:
+                            {{ "yes" if entry.has_notebook else "no" }}
+                            · Gallery photos: {{ entry.photo_count }}
+                        </p>
+                    </div>
+                    <div class="admin-actions">
+                        <a class="btn" href="{{ url_for('main.entry_detail', entry_id=entry.id) }}">View</a>
+                        <a class="btn btn-primary" href="{{ url_for('main.admin_edit', entry_id=entry.id) }}">
+                            Edit
+                        </a>
+                    </div>
+                </article>
+            {% endfor %}
+        </section>
+    {% else %}
+        <section class="empty-state">
+            <h2>No entries yet</h2>
+            <p>Create your first notebook post from the admin upload page.</p>
+        </section>
+    {% endif %}
+{% endblock %}

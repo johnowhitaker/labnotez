@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Lab Notes{% endblock %}
+{% block content %}
+    <section class="hero">
+        <p class="hero-kicker">Open Science Journal</p>
+        <h1>Chronological Lab Notebook</h1>
+        <p class="hero-copy">
+            Daily logs with notebook pages, experiment photos, and markdown notes.
+        </p>
+    </section>
+
+    {% if entries %}
+        <section class="timeline">
+            {% for entry in entries %}
+                <article class="entry-card" id="entry-{{ entry.id }}">
+                    <header class="entry-header">
+                        <p class="entry-date">{{ entry.entry_date|human_date }}</p>
+                        <h2>{{ entry.title if entry.title else "Daily Entry" }}</h2>
+                        <a class="entry-link" href="{{ url_for('main.entry_detail', entry_id=entry.id) }}">
+                            Permalink
+                        </a>
+                    </header>
+
+                    {% if entry.notebook %}
+                        <section class="notebook-panel">
+                            <p class="section-label">Notebook Page</p>
+                            <figure class="notebook-figure">
+                                <img
+                                    src="{{ entry.notebook.url }}"
+                                    alt="Notebook page for {{ entry.entry_date }}"
+                                    loading="lazy"
+                                >
+                                {% if entry.notebook.caption %}
+                                    <figcaption>{{ entry.notebook.caption }}</figcaption>
+                                {% endif %}
+                            </figure>
+                        </section>
+                    {% endif %}
+
+                    {% if entry.photos %}
+                        <section class="gallery-panel">
+                            <p class="section-label">Experiment Gallery</p>
+                            <div class="gallery-grid">
+                                {% for photo in entry.photos %}
+                                    <figure class="gallery-item">
+                                        <img
+                                            src="{{ photo.url }}"
+                                            alt="{{ photo.caption if photo.caption else 'Experiment photo' }}"
+                                            loading="lazy"
+                                        >
+                                        {% if photo.caption %}
+                                            <figcaption>{{ photo.caption }}</figcaption>
+                                        {% endif %}
+                                    </figure>
+                                {% endfor %}
+                            </div>
+                        </section>
+                    {% endif %}
+
+                    {% if entry.body_markdown %}
+                        <section class="notes-panel">
+                            <p class="section-label">Daily Notes</p>
+                            <div class="markdown-body">
+                                {{ entry.body_html|safe }}
+                            </div>
+                        </section>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </section>
+    {% else %}
+        <section class="empty-state">
+            <h2>No entries yet</h2>
+            <p>Log in and publish your first notebook day.</p>
+        </section>
+    {% endif %}
+{% endblock %}
