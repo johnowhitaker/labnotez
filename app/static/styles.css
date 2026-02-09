@@ -195,6 +195,26 @@ h3 {
     gap: 1.2rem;
 }
 
+.pagination {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+}
+
+.pagination-label {
+    font-family: "Space Grotesk", sans-serif;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.pagination-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
 .entry-card {
     background: linear-gradient(168deg, #fffefc 0%, #faf6ed 100%);
     border: 1px solid var(--panel-edge);

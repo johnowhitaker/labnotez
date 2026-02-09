@@ -68,6 +68,21 @@
                 </article>
             {% endfor %}
         </section>
+        {% if total_pages > 1 %}
+            <nav class="pagination" aria-label="Pagination">
+                {% if has_prev %}
+                    <a class="btn" href="{{ url_for('main.index', page=page-1) }}">Newer</a>
+                {% else %}
+                    <span class="btn pagination-disabled" aria-disabled="true">Newer</span>
+                {% endif %}
+                <span class="pagination-label">Page {{ page }} of {{ total_pages }}</span>
+                {% if has_next %}
+                    <a class="btn" href="{{ url_for('main.index', page=page+1) }}">Older</a>
+                {% else %}
+                    <span class="btn pagination-disabled" aria-disabled="true">Older</span>
+                {% endif %}
+            </nav>
+        {% endif %}
     {% else %}
         <section class="empty-state">
             <h2>No entries yet</h2>

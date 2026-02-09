@@ -164,13 +164,23 @@ def _fetch_entry(entry_id: int) -> dict[str, Any] | None:
     return entry
 
 
-def _fetch_entries() -> list[dict[str, Any]]:
+def _fetch_entries(page: int, per_page: int) -> tuple[list[dict[str, Any]], int]:
+    total_entries = get_db().execute("SELECT COUNT(*) AS total FROM entries").fetchone()["total"]
+    if total_entries == 0:
+        return [], 0
+
+    total_pages = (total_entries + per_page - 1) // per_page
+    safe_page = max(1, min(page, total_pages))
+    offset = (safe_page - 1) * per_page
+
     rows = get_db().execute(
         """
         SELECT id, entry_date, title, body_markdown, created_at, updated_at
         FROM entries
         ORDER BY entry_date DESC, id DESC
-        """
+        LIMIT ? OFFSET ?
+        """,
+        (per_page, offset),
     ).fetchall()
 
     entries: list[dict[str, Any]] = []
@@ -181,7 +191,7 @@ def _fetch_entries() -> list[dict[str, Any]]:
         entry["photos"] = photos
         entry["body_html"] = _render_markdown(entry["body_markdown"])
         entries.append(entry)
-    return entries
+    return entries, total_pages
 
 
 def _fetch_dashboard_rows() -> list[dict[str, Any]]:
@@ -235,8 +245,22 @@ def _store_new_photos(
 
 @bp.route("/")
 def index():
-    entries = _fetch_entries()
-    return render_template("index.html", entries=entries)
+    requested_page = request.args.get("page", default=1, type=int)
+    page = requested_page if requested_page and requested_page > 0 else 1
+    per_page = 20
+    entries, total_pages = _fetch_entries(page=page, per_page=per_page)
+    if total_pages > 0 and page > total_pages:
+        page = total_pages
+        entries, total_pages = _fetch_entries(page=page, per_page=per_page)
+
+    return render_template(
+        "index.html",
+        entries=entries,
+        page=page,
+        total_pages=total_pages,
+        has_prev=page > 1,
+        has_next=page < total_pages,
+    )
 
 
 @bp.route("/entry/<int:entry_id>")
