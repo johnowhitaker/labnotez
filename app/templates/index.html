@@ -29,6 +29,7 @@
                                     src="{{ entry.notebook.url }}"
                                     alt="Notebook page for {{ entry.entry_date }}"
                                     loading="lazy"
+                                    data-image-viewer-trigger
                                 >
                                 {% if entry.notebook.caption %}
                                     <figcaption>{{ entry.notebook.caption }}</figcaption>
@@ -47,6 +48,7 @@
                                             src="{{ photo.url }}"
                                             alt="{{ photo.caption if photo.caption else 'Experiment photo' }}"
                                             loading="lazy"
+                                            data-image-viewer-trigger
                                         >
                                         {% if photo.caption %}
                                             <figcaption>{{ photo.caption }}</figcaption>

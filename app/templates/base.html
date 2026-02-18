@@ -47,6 +47,15 @@
         Public notebook for small biology experiments.
     </footer>
 
+    <div class="image-viewer" data-image-viewer hidden aria-hidden="true">
+        <div class="image-viewer-backdrop" data-image-viewer-close></div>
+        <figure class="image-viewer-content" role="dialog" aria-modal="true" aria-label="Image viewer">
+            <button type="button" class="image-viewer-close" data-image-viewer-close aria-label="Close image viewer">Close</button>
+            <img src="" alt="" data-image-viewer-image>
+            <figcaption class="image-viewer-caption" data-image-viewer-caption hidden></figcaption>
+        </figure>
+    </div>
+
     <script defer src="{{ url_for('static', filename='admin.js') }}"></script>
 </body>
 </html>

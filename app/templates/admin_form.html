@@ -72,7 +72,7 @@
             <div class="single-preview" id="notebook-preview">
                 {% if notebook and notebook.url %}
                     <figure>
-                        <img src="{{ notebook.url }}" alt="Current notebook page">
+                        <img src="{{ notebook.url }}" alt="Current notebook page" data-image-viewer-trigger>
                         <figcaption>Current notebook page</figcaption>
                     </figure>
                 {% endif %}
@@ -86,7 +86,7 @@
                     {% for photo in entry.photos %}
                         <article class="existing-photo">
                             <input type="hidden" name="existing_photo_id" value="{{ photo.id }}">
-                            <img src="{{ photo.url }}" alt="Gallery photo {{ loop.index }}">
+                            <img src="{{ photo.url }}" alt="Gallery photo {{ loop.index }}" data-image-viewer-trigger>
                             <label>
                                 Caption
                                 <input
