@@ -8,6 +8,8 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from PIL import Image, ImageOps, UnidentifiedImageError
+from pillow_heif import register_heif_opener
 from flask import (
     Blueprint,
     abort,
@@ -27,6 +29,7 @@ from werkzeug.utils import secure_filename
 from .db import get_db
 
 bp = Blueprint("main", __name__)
+register_heif_opener()
 
 
 @bp.app_template_filter("human_date")
@@ -65,6 +68,36 @@ def _allowed_image(filename: str) -> bool:
     return extension in current_app.config["ALLOWED_IMAGE_EXTENSIONS"]
 
 
+def _save_image_as_jpeg(file_storage: FileStorage, destination: Path) -> None:
+    max_dimension = current_app.config["IMAGE_MAX_DIMENSION"]
+    jpeg_quality = current_app.config["IMAGE_JPEG_QUALITY"]
+
+    try:
+        with Image.open(file_storage.stream) as image:
+            image = ImageOps.exif_transpose(image)
+            image.thumbnail((max_dimension, max_dimension), Image.Resampling.LANCZOS)
+
+            if image.mode in {"RGBA", "LA"} or (
+                image.mode == "P" and "transparency" in image.info
+            ):
+                image = image.convert("RGBA")
+                background = Image.new("RGB", image.size, (255, 255, 255))
+                background.paste(image, mask=image.getchannel("A"))
+                image = background
+            else:
+                image = image.convert("RGB")
+
+            image.save(
+                destination,
+                format="JPEG",
+                quality=jpeg_quality,
+                optimize=True,
+                progressive=True,
+            )
+    except UnidentifiedImageError as error:
+        raise ValueError("Uploaded image could not be read.") from error
+
+
 def _save_uploaded_image(file_storage: FileStorage, entry_date: str, role: str) -> str:
     original_name = secure_filename(file_storage.filename or "")
     if not original_name:
@@ -76,14 +109,13 @@ def _save_uploaded_image(file_storage: FileStorage, entry_date: str, role: str) 
 
     parsed_date = datetime.strptime(entry_date, "%Y-%m-%d").date()
     relative_dir = Path(f"{parsed_date.year:04d}") / f"{parsed_date.month:02d}" / f"{parsed_date.day:02d}"
-    extension = Path(original_name).suffix.lower()
-    filename = f"{role}-{uuid4().hex}{extension}"
+    filename = f"{role}-{uuid4().hex}.jpg"
 
     destination_dir = _upload_root() / relative_dir
     destination_dir.mkdir(parents=True, exist_ok=True)
 
     absolute_path = destination_dir / filename
-    file_storage.save(absolute_path)
+    _save_image_as_jpeg(file_storage, absolute_path)
 
     return (relative_dir / filename).as_posix()
 

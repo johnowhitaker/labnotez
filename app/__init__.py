@@ -37,6 +37,8 @@ def create_app() -> Flask:
         DATABASE_PATH=database_path,
         UPLOAD_DIR=upload_dir,
         ALLOWED_IMAGE_EXTENSIONS={"jpg", "jpeg", "png", "webp", "gif", "heic", "heif"},
+        IMAGE_MAX_DIMENSION=int(os.getenv("LABNOTES_IMAGE_MAX_DIMENSION", "1920")),
+        IMAGE_JPEG_QUALITY=int(os.getenv("LABNOTES_IMAGE_JPEG_QUALITY", "75")),
         MAX_CONTENT_LENGTH=int(os.getenv("LABNOTES_MAX_UPLOAD_MB", "64")) * 1024 * 1024,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
