@@ -1,4 +1,9 @@
 (() => {
+    const imageUploadSettings = {
+        maxDimension: 1920,
+        jpegQuality: 0.75,
+    };
+
     const decorateViewerTrigger = (image) => {
         if (!(image instanceof HTMLImageElement)) return;
         image.setAttribute("data-image-viewer-trigger", "");
@@ -6,12 +11,102 @@
         if (!image.hasAttribute("role")) image.setAttribute("role", "button");
     };
 
+    const canRewriteFileInput = () => {
+        try {
+            return typeof DataTransfer === "function";
+        } catch {
+            return false;
+        }
+    };
+
+    const setFormProcessing = (form, isProcessing) => {
+        if (!(form instanceof HTMLFormElement)) return;
+        form.dataset.uploadProcessing = isProcessing ? "true" : "false";
+        form.querySelectorAll("button[type='submit']").forEach((button) => {
+            if (button instanceof HTMLButtonElement) button.disabled = isProcessing;
+        });
+    };
+
+    const blobToImage = (blob) =>
+        new Promise((resolve, reject) => {
+            const image = new Image();
+            const objectUrl = URL.createObjectURL(blob);
+            image.onload = () => {
+                URL.revokeObjectURL(objectUrl);
+                resolve(image);
+            };
+            image.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
+                reject(new Error("Could not read selected image."));
+            };
+            image.src = objectUrl;
+        });
+
+    const resizedImageFile = async (file) => {
+        if (!(file instanceof File) || !file.type.startsWith("image/")) return file;
+
+        const image = await blobToImage(file);
+        const largestSide = Math.max(image.naturalWidth, image.naturalHeight);
+        const scale = largestSide > imageUploadSettings.maxDimension
+            ? imageUploadSettings.maxDimension / largestSide
+            : 1;
+        const width = Math.max(1, Math.round(image.naturalWidth * scale));
+        const height = Math.max(1, Math.round(image.naturalHeight * scale));
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext("2d");
+        if (!context) return file;
+
+        context.drawImage(image, 0, 0, width, height);
+        const blob = await new Promise((resolve) => {
+            canvas.toBlob(resolve, "image/jpeg", imageUploadSettings.jpegQuality);
+        });
+        if (!(blob instanceof Blob)) return file;
+
+        const jpgName = file.name.replace(/\.[^.]+$/, "") || "image";
+        return new File([blob], `${jpgName}.jpg`, {
+            type: "image/jpeg",
+            lastModified: Date.now(),
+        });
+    };
+
+    const resizeSelectedFiles = async (fileInput) => {
+        if (!(fileInput instanceof HTMLInputElement) || !canRewriteFileInput()) return;
+
+        const originalFiles = Array.from(fileInput.files || []);
+        if (originalFiles.length === 0) return;
+
+        const form = fileInput.closest("form");
+        setFormProcessing(form, true);
+        try {
+            const transfer = new DataTransfer();
+            for (const file of originalFiles) {
+                transfer.items.add(await resizedImageFile(file));
+            }
+            fileInput.files = transfer.files;
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setFormProcessing(form, false);
+        }
+    };
+
+    document.querySelectorAll("form[enctype='multipart/form-data']").forEach((form) => {
+        form.addEventListener("submit", (event) => {
+            if (form.dataset.uploadProcessing !== "true") return;
+            event.preventDefault();
+        });
+    });
+
     const notebookInput = document.querySelector("[data-notebook-input]");
     if (notebookInput) {
         const previewTargetId = notebookInput.dataset.previewTarget;
         const previewRoot = previewTargetId ? document.getElementById(previewTargetId) : null;
 
-        notebookInput.addEventListener("change", () => {
+        notebookInput.addEventListener("change", async () => {
+            await resizeSelectedFiles(notebookInput);
             if (!previewRoot) return;
             previewRoot.innerHTML = "";
             const file = notebookInput.files && notebookInput.files[0];
@@ -35,7 +130,8 @@
 
         const previewRoot = previewTargetId ? document.getElementById(previewTargetId) : null;
 
-        photoInput.addEventListener("change", () => {
+        photoInput.addEventListener("change", async () => {
+            await resizeSelectedFiles(photoInput);
             if (!previewRoot) return;
 
             previewRoot.innerHTML = "";
